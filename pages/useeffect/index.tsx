@@ -12,7 +12,7 @@ const fetchService = async (param: Resource) => {
   if (res.status < 399) {
     return res.json();
   } else {
-    throw new Error();
+    throw new Error(`Error ${res.status}`);
   }
 };
 
