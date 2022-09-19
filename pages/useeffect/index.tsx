@@ -41,10 +41,41 @@ const setInitialState = (): State => {
 const UseEffectPage: NextPage = () => {
   const [state, setState] = useState<State>(() => setInitialState());
 
+  const getData = useCallback(async (resource: Resource) => {
+    if (!resource) {
+      return;
+    }
+    updateStateKey('status', Status.LOADING);
+    try {
+      const res = await fetchService(resource);
+      updateStateKey('items', res ?? []);
+      updateStateKey('status', Status.SUCCESS);
+    } catch (e) {
+      updateStateKey('status', Status.ERROR);
+      console.log((e as Error).message);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateStateKey('resourceType', 'posts');
+    return () => {
+      updateState();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (state.resourceType) {
+      console.log('After Update', state.resourceType);
+      getData(state.resourceType);
+    }
+    return () => {
+      console.log('Before Update', state.resourceType);
+    };
+  }, [state.resourceType, getData]);
+
   function updateState(state?: State) {
     setState(() => state ?? setInitialState());
   }
-  
   function updateStateKey<T extends keyof State>(key: T, value: State[T]) {
     setState((prevState) => ({ ...prevState, [key]: value }));
   }
